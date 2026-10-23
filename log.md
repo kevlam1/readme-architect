@@ -1,15 +1,15 @@
-# Build log: Artifact 3 (temporaryname)
+# Build log: Artifact 3 (readme-architect)
 
-**AI:** Claude Code | **Editor:** IntelliJ IDEA Ultimate | **Host:** not decided
-**Stack:** not decided.
+**AI:** Claude Code | **Editor:** IntelliJ IDEA Ultimate | **Host:** GitHub only (public repo `kevlam1/readme-architect`, no hosting)
+**Stack:** A Claude Code skill (`SKILL.md`) plus plain Node scripts, no dependencies (Node 24).
 
 ---
 
 ## What I set out to build
 
-Not decided yet. Artifact 3 is "AI inside it": a model has to do part of the work every time it runs. I have until Sunday 25 October. `temporaryname` is a placeholder for the folder and the project.
+Artifact 3 is "AI inside it": a model has to do part of the work every time it runs. I have until Sunday 25 October. I built readme-architect, a Claude Code skill plus plain Node scripts that fact-checks a README against the project's real files, and can also draft one. The model lists each claim and gives evidence (a file and a word-for-word quote), and scripts check that the evidence exists.
 
-Update 2026-10-22: I have a direction now (see entry 2): a tool that fact-checks a README against the real code, and can also write one. The name is not final.
+I started with no idea and the placeholder name `temporaryname`. I rewrote this section and the two lines at the top on 2026-10-22, once the project was built. The numbered entries below are left as they were, so they show what I knew at each point.
 
 ---
 
@@ -300,7 +300,7 @@ Update 2026-10-22: I have a direction now (see entry 2): a tool that fact-checks
 
 ---
 
-## 13. Third midi-companion run, and reading the unsupported claims (2026-10-22)
+## 13. Second midi-companion run, and reading the unsupported claims (2026-10-22)
 
 **What I asked for**
 - Asked how to test the slash command on midi-companion. I pasted a Git Bash command into PowerShell and got an error, so I asked Claude to run it. Claude ran it through its own Bash tool. Then I asked it to go through the unsupported claims, and whether other users would have to do the same.
@@ -357,6 +357,52 @@ Update 2026-10-22: I have a direction now (see entry 2): a tool that fact-checks
 
 ---
 
+## 15. Commits, the GitHub repo and the card plan (2026-10-22)
+
+**What I asked for**
+- After the templates, I said the folder was renamed already and asked Claude to add multiple commits, because one would look odd. I made the empty GitHub repo myself (`kevlam1/readme-architect`) and gave Claude the link. Then I asked for the build log and the card plan: the artifact link is the repo, the build log would live on the portfolio, and the demo would be an animated illustration made by Claude. Claude pointed out that the log is in this repo, and I chose option 1 (link to `log.md` on GitHub). Last, I asked for a prompt for the Portfolio session and for this log entry.
+
+**What changed**
+- `README.md`: the placeholder is now a real README (what it does, the model/code split, what it cannot do, how to try it, what I ran it on). `docs/todo.md`: rewritten from the "choose the idea" list to the real open items. I did not log either change before this entry.
+- Eight commits on `main`, all by me as the git user and with no attribution line: setup; templates; checker with tests and fixtures; gather script; skill instructions; README and log; the `CLAUDE.md` and todo fix after the rename; and the card links decision.
+- `CLAUDE.md` and `docs/todo.md` now record the card links and the demo rules.
+
+**What I checked**
+- Before the first commit, Claude searched the 22 files for emails, addresses and key patterns. It found only the made-up test keys (built in pieces) and the checker's own pattern list. `readme-architect-out/` stayed out because it is gitignored.
+- The repo was public and empty before the push. After a plain push (no force), GitHub's `main` had the same hash as mine, its tree listed the 8 top-level items, and its commit list showed the messages. GitHub's "contents" endpoint kept saying the repo was empty, which I think was a cached answer. I did not open the repo page in a browser.
+- The repo link and the `log.md` link both returned HTTP 200 (a request from a script, not a browser).
+- **Not checked:** the portfolio's card code, which I have not touched, and the card itself, which does not exist yet. Nothing in the card has been seen on a screen.
+
+**Decisions**
+- Card links: the artifact link is the repo, and the build-log button is `log.md` on GitHub. I did not make a `/logs/` page, so the MIDI Companion scripts are not copied. A portfolio copy of the log would go stale after any later edit. I may still make one at the end if there is time and I want it to match the other cards.
+- The demo is an animated illustration shown on the portfolio. It has to say it is an illustration, not a real run, and use only real numbers from `run6-result.json` (188 claims, 167 by code, 4 only by notes, 17 unsupported).
+- The reflection on the card is mine to write. Claude is not to write it.
+- Commit dates are all today. Claude split the history by what each part does and did not backdate anything, because it was one session.
+- Next: fill in the card from a session started in the Portfolio folder (Claude wrote me a prompt for it), then the illustration.
+
+---
+
+## 16. Cleaning up stale text (2026-10-22)
+
+**What I asked for**
+- Asked why the log still said `temporaryname`, and told Claude to go through the log and the other files in the repo for anything out of date.
+
+**What changed**
+- `log.md`: the two lines at the top (host and stack) and the "What I set out to build" section were rewritten to describe the finished project, with a line saying so. Entries 1 to 12 are untouched on purpose: they say `temporaryname` because that was the folder's name when I wrote them, and changing them would make the log say things that did not happen. The entry 13 title said "Third midi-companion run" and is now "Second" (see below).
+- `CLAUDE.md`: "nothing built yet" in the model/code section, the `.gitignore` list (it was missing `*.log`, `*.local` and `readme-architect-out/`), the "First session" heading (marked done), the `/logs/` page scripts (marked not used here), and the template-review line.
+- `docs/todo.md`: the template review item, the commit count, and a duplicate card item.
+
+**What I checked**
+- I searched all files except the saved runs and the fixtures for old phrases ("temporaryname", "not decided", "not started", "not renamed", "placeholder", "has not reviewed"). The ones left in `log.md` entries 1 to 12 are history. The `temporaryname` in `scripts/test-check.mjs` is a made-up quote used by a test, and the word "placeholder" in `check-readme.mjs` is about command placeholders, not this project. Both are fine.
+- I checked the saved result files: run 4 was midi-companion (134 claims) and run 6 was midi-companion (188 claims). So entry 13 was the second midi-companion run, not the third.
+- `README.md` and `SKILL.md` had nothing out of date that I could find. I read the README's claims against what I know of the repo, but I did not run the checker on it.
+- **Not checked:** the "Not yet read" line in `CLAUDE.md` about "Tools on Top of LLMs" and the other Unit 3 PDFs. Only I know whether I have read them.
+
+**Decisions**
+- Past entries stay as written. Only the summary parts that describe the project as it is now were rewritten.
+
+---
+
 ## Where AI misread me, or I had to correct course
 
 **Claude**
@@ -370,6 +416,9 @@ Update 2026-10-22: I have a direction now (see entry 2): a tool that fact-checks
 - **Weak evidence got through (the model's slip, entry 11):** "dotted guides" was backed by a comment about an orange strip, and "no UI framework" got no evidence although `package.json` shows it. Added two rules to `SKILL.md`; not re-run yet.
 - **Gave me the wrong shell's command (Claude's slip, entry 13):** Claude told me to run a Git Bash command (`MSYS_NO_PATHCONV=1 claude ...`) and I ran it in PowerShell, which does not understand that prefix, so I got a long error. Claude owned it and ran the command itself through its Bash tool.
 - **Left evidence empty although my notes had it (the model's slip, entry 13):** seven of the 17 unsupported claims are stated in `CLAUDE.md` or `log.md`. The model's own rule told it to use notes only for facts the code cannot show. Widened the rule in `SKILL.md`; not re-run yet.
+- **Said "log.md link" and confused me (Claude's slip, entry 15):** I asked where the build log would live, and Claude offered "link to log.md on GitHub" without saying that the log was already in this repo. I thought it meant the portfolio's own `log.md`, so I asked if it wasn't living on the portfolio. Claude explained and I chose option 1.
+- **Left the README and todo rewrite out of the log (Claude's slip, entry 15):** both were rewritten after entry 13 and were not logged until entry 15.
+- **Wrong run count in a title (Claude's slip, entry 16):** entry 13 was titled "Third midi-companion run", but midi-companion had been checked twice (runs 4 and 6). Claude only caught it when I asked it to go through the log, and fixed the title.
 
 **My own mistakes**
 - Nothing yet.
@@ -381,3 +430,5 @@ Update 2026-10-22: I have a direction now (see entry 2): a tool that fact-checks
 - Considered copying the build-log page scripts from MIDI Companion now. Left them out for now: the page needs somewhere to be served, and the shape of the project isn't chosen yet.
 - Considered a MIDI practice coach (code reads a MIDI file, a model writes practice advice). Dropped: it leans on Artifact 2's idea, the output is hard to check, and MIDI files of real songs are copyrighted.
 - Considered a tool that drafts my log entries from the git diff. Dropped: my logs have to be in my words.
+- Considered a `/logs/` page on the portfolio built from this log, like Artifact 2's. Left it out for now (entry 15): it is a copy that goes stale, and the card can link straight to `log.md` on GitHub.
+- Considered sub-templates, such as a full-stack kind for repos like Cardex and PokeGuess. Skipped (entry 14): gather and the command check only read the top-level `package.json`, so it needs script changes.
