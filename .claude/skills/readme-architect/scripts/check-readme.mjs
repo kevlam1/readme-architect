@@ -68,17 +68,23 @@ export function checkClaims(root, report, listed = null, readmeRel = null) {
   return { results };
 }
 
+// A code fence labeled text or output shows what a command prints, so its lines are not commands to check.
+const OUTPUT_FENCE = /^(text|output)$/i;
+
 export function parseMarkdown(md) {
   const headings = [];
   const code = [];
   let inFence = false;
+  let outputFence = false;
   md.replace(/\r\n/g, '\n').split('\n').forEach((line, i) => {
-    if (/^\s{0,3}(```|~~~)/.test(line)) {
+    const fence = /^\s{0,3}(?:```|~~~)\s*([\w-]*)/.exec(line);
+    if (fence) {
       inFence = !inFence;
+      outputFence = inFence && OUTPUT_FENCE.test(fence[1]);
       return;
     }
     if (inFence) {
-      code.push(line);
+      if (!outputFence) code.push(line);
       return;
     }
     const h = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line);

@@ -171,6 +171,16 @@ test('markdown: headings and code are found, and ## inside a fence is not a head
   assert.deepEqual(p.code, ['## not a heading', 'npm run dev', 'npm test']);
 });
 
+test('markdown: a fence labeled text or output is not read as commands, but an unlabeled or bash one still is', () => {
+  const shown = 'Prints:\n\n```text\n  - npm run test: no "test" script\n```\n\n```output\nnode scripts/seed.mjs: file not found\n```\n\n```bash\nnpm run dev\n```\n\n```\nnpm start\n```\n\nThen `npm test` here.\n';
+  assert.deepEqual(parseMarkdown(shown).code, ['npm run dev', 'npm start', 'npm test']);
+});
+
+test('markdown: a text fence ends at its closing fence, so the next block is read again', () => {
+  const md = '```text\nnpm run hidden\n```\n```\nnpm run seen\n```\n';
+  assert.deepEqual(parseMarkdown(md).code, ['npm run seen']);
+});
+
 test('commands: the good README has no problems', () => {
   const r = checkCommands(repo, parseMarkdown(readme('good.md')).code);
   assert.deepEqual(r.problems, []);
