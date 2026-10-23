@@ -9,7 +9,8 @@
 - [ ] Fill in the Artifact 3 card in a session started in `../Portfolio`: title, repo link, build-log link, and a few sentences of reflection in my own words. Log it in the Portfolio's `log.md` too.
 - [ ] Test whether a permission deny rule or the skill's tool restrictions stop Claude from opening a `.env` file, and write down what was found.
 - [ ] Optional: run generate mode on a real project (midi-companion), about $1 or more at list price.
-- [ ] Optional: re-run check mode once to see whether the widened notes rule in `SKILL.md` works (about $2 at list price).
+- [x] Re-run check mode once with the widened notes rule: done on this repo's own README (log entry 19). It does not show whether the rule helps on other READMEs.
+- [ ] Decide whether `SKILL.md` should count as code, not notes, in the checker's "only by notes" warning (15 of the 43 notes-only claims in entry 19 cite it).
 - [ ] Optional: a "can't be verified from a repo" group in the checker's report.
 - [ ] Read "Tools on Top of LLMs" (named in the spec).
 - [ ] Demo for the card: an animated illustration made by Claude, labeled as an illustration and using only real numbers from `readme-architect-out/run6-result.json`. Lowest priority; do it after the card text.

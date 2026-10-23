@@ -403,6 +403,115 @@ I started with no idea and the placeholder name `temporaryname`. I rewrote this 
 
 ---
 
+## 17. Checking the finished artifact from a clean clone (2026-10-22)
+
+**What I asked for**
+- Asked Claude to check again whether the artifact is good or still needs updates.
+
+**What changed**
+- `README.md` only. The example command now starts with `mkdir -p readme-architect-out` and uses `../your-project` as a placeholder. A sentence says I have only run the skill from this folder with `--add-dir`, not copied into another project. The cost bullet now has run times.
+
+**What I checked**
+- Claude cloned the public repo into a new temp folder, ran both test files from outside it (33 and 12 passed), and then deleted the folder and the files it made there. The clone has 22 files and `SKILL.md` is 80 lines, well under 500.
+- **The README's example command failed on a fresh clone** ("No such file or directory"), because `readme-architect-out/` is gitignored and so is not in a clone, and the shell opens the `>` file before the tool starts. `gather.mjs --out` does create a missing folder (checked), so the skill is fine and only the README command was wrong.
+- The checker's no-model parts (headings, commands, secrets) pass on the README. The only warning is the "What I ran it on" section, which is expected.
+- The run times in the README come from the saved result files: run 3 took 90 seconds, run 4 took 245, run 6 took 297.
+- **Not checked:** the spec's "weigh latency" goal was only partly covered before this, and I did not run the skill again. I did not test whether a deny rule stops Claude from reading a `.env` file (still on the todo list), and I did not run generate mode on a real project.
+- **My email is in every commit.** All 9 commits carry my personal Gmail address as the author, so it is public on the GitHub repo. It is not in any file. I have not changed any history.
+
+**Decisions**
+
+---
+
+## 18. A secret could stay on the list of files to open (2026-10-22)
+
+**What I asked for**
+- Asked whether the artifact itself is good, if it was tested at its current version, and whether Claude could be sure it needs no fixes or upgrades.
+
+**What changed**
+- `gather.mjs`: it now reads the first 200 KB of every text file (not images, audio, fonts or other binaries) and takes any file that looks like it holds a secret off the `files` list, recording the line numbers only. Before, only entry files and the `package.json` summary were scanned, and a flagged file even stayed on the `files` list as well as on `skipped`. A `package.json` whose summary is withheld is now also taken off the list. I did not touch `check-readme.mjs`.
+- `scripts/test-gather.mjs`: one test changed (the secrets test expected the flagged file to stay on the list) and two added, 14 tests now. One of them documents a known limit: a secret after the first 200 KB of a file is not seen.
+- `README.md` and `CLAUDE.md`: the test count, and the wording about what gather skips.
+
+**What I checked**
+- File timestamps against the last real run (run 6): both scripts were last changed before it, so run 6 used the current checker and gather. `SKILL.md` and three templates (`web-app`, `static-site`, `claude-skill`) were changed after it, so no model run has used them yet. Run 5 (generate mode, the fixture repo) used the old `web-app.md`.
+- A throwaway repo in Temp with made-up secrets in a `.env`, an `id_rsa`, a gitignored file, a source file and the README. Gather left out the first three and `node_modules`, and no secret value appeared in its output or in the checker's report. The source file with a token-shaped string stayed on the list. That is the gap I then fixed.
+- After the fix: 14 gather tests and 33 checker tests pass. I compared the old and new gather on midi-companion, the Portfolio, this repo and the fixture: same files, same skipped lists, same kinds, same entry files, so the fix did not hide any legitimate file.
+- **Not checked:** the fix with a model run. No model run was needed to test it, since gather is plain code, but the skill has not been run since this change. Also not checked: secrets of a shape the scanner does not know, secrets after the first 200 KB of a file, and files Claude Code opens with its own tools, which is still the untested deny rule.
+
+**Decisions**
+- Fixed it in the code, not by telling the model more firmly not to open the file.
+- Claude cannot promise the artifact needs no fixes. What is tested at its current version: the two scripts. What is not: `SKILL.md`'s widened notes rule, the three changed templates with a model, generate mode on a real project, and the deny rule.
+
+---
+
+## 19. The tool checks its own README (2026-10-22)
+
+**What I asked for**
+- Asked whether this repo's README was made by its own skill command. It was not: Claude wrote it by hand, and the skill had never run on it. I told Claude to run the tool on its own README.
+
+**What changed**
+- Only `README.md`, after the run: three sentences were made more exact, and a line about this run was added under "What I ran it on" (see below). I did not run the skill a second time.
+- `docs/todo.md` and `CLAUDE.md`: the re-run item is checked off and the status mentions this run.
+
+**What I checked**
+- Claude copied the old `claims.json` and `gather.json` to `run6-claims.json` and `run6-gather.json` first, because the skill overwrites them. Then it ran `/readme-architect check . README.md` headless from this folder. 14 turns, 144 seconds, about $1.05 at list price (an estimate), no permission denials, no error. The template was `claude-skill.md`.
+- The checker's report: 74 claims, 30 supported by code, 43 only by notes, 1 unsupported, 0 bad evidence. The only structure warning is "What I ran it on", which is about this project's own runs and is not in the template.
+- The one unsupported claim is "The test files and the checker alone take seconds and cost nothing". Nothing in the repo states it. Claude timed both test files afterwards: about 1.2 seconds together. I kept the sentence.
+- **Most of the notes-only claims are real facts, but weak evidence.** 15 of the 43 cite `SKILL.md`, which counts as notes because it ends in `.md`, though for a skill it is the instructions that make the behavior. The rest cite `CLAUDE.md` and `log.md`, which are my own notes, so a number like "33 tests" is backed only by a line that says 33 tests. Claude ran both test files earlier in this session and got 33 and 14, so those numbers are right, but the checker cannot show it.
+- **Claude's spot check of the evidence:** "It runs only when the user types the command" cites `disable-model-invocation: true`, which fits. "The only things it may run without asking are the scripts" cites the two pre-approval lines in `SKILL.md`, which show what is allowed but not that nothing else is, so I changed the sentence to "the only commands it pre-approves". The model itself said "word for word" was slightly too strong because the checker ignores extra spaces and line breaks (`check-readme.mjs` line 11), and that "anything in `.gitignore`" was too strong because `!` lines are counted and not applied. Claude confirmed the first in the code, and the second was already in `CLAUDE.md`. Both sentences are fixed.
+- **Not checked:** most of the 30 code-backed claims, and whether the model missed claims. The widened notes rule from entry 13 was used for the first time here, but this README's claims are mostly about the project itself, where notes are the natural source. So this run does not show whether the rule helps on a different README.
+- The model said it counted the `test(...)` calls itself instead of running the tests, which fits with its numbers matching.
+
+**Decisions**
+- Did not change the checker to treat `SKILL.md` as code. It is a one-line change, but it changes what the "only by notes" warning means, and I have not decided whether `SKILL.md` counts as code when it only tells a model what to do.
+- Added a line to the README's "What I ran it on" saying the tool ran once on its own README and that I fixed wording afterward without re-running it.
+
+---
+
+## 20. Better guidance in the templates' "run it" sections (2026-10-22)
+
+**What I asked for**
+- Asked whether the "Try it" section in this repo's README was comprehensive or intuitive enough. Claude said no. I then said it should consider updating the template guide, and Claude took that to mean the comments inside each template that tell the model what a section must contain.
+
+**What changed**
+- The comment under the run or use section of all four templates: `claude-skill.md` ("Try it"), `web-app.md` and `static-site.md` ("Run it locally"), and `library-cli.md` ("Usage"). They now say to start with the quickest way to see it work, to give one plain sentence per command or flag, to say what the reader will see only if a file in the repo shows it, and to use placeholders for paths that belong to the reader. The skill template also lays out the order: a no-model way to see it work first, then the real slash command with its arguments explained, then where the output goes. No headings changed.
+- I did not change this repo's own README. Its "Try it" does not follow the new guidance yet.
+
+**What I checked**
+- Every comment is still on one line, and the checker reads all four templates the same way as before: the midi-companion README matches `web-app.md` and the Portfolio README matches `static-site.md`, with nothing missing, extra or out of order, and this README still differs from `claude-skill.md` only by the extra "What I ran it on". Both test files still pass (33 and 14).
+- The no-model example that the new guidance asks for exists: running the checker on the bad fixture README prints 5 problems and exits with code 1. Claude ran that command and read the output.
+- **Not checked:** how the model follows the longer comments. I did not run generate mode again, so I don't know whether it produces a better "Try it". The comments also ask the model to explain what each flag does "from SKILL.md or a notes file", which depends on those files saying it.
+
+**Decisions**
+- Kept the evidence rule: the model may describe what a run prints only if a file in the repo shows it. That is why the new guidance does not ask for sample output on its own.
+- Next: rewrite this README's "Try it" to follow the new guidance. I have not decided whether to test the interactive way of running the skill first.
+
+---
+
+## 21. Rewriting "Try it", and the checker failing its own README (2026-10-22)
+
+**What I asked for**
+- Said yes to rewriting this README's "Try it" with the new template guidance, and to committing in logical commits.
+
+**What changed**
+- `README.md`, "Try it": now three steps and the tests. 1) the checker on the bad test project, with no model and no cost, and the output it printed; 2) the real run, with each part of the long command explained; 3) how to read the report. The old version started with the tests and left the flags unexplained.
+- `check-readme.mjs`, `parseMarkdown`: a code fence labeled `text` or `output` is no longer read as commands to check. Before, every line in any fence was treated as a command.
+- `scripts/test-check.mjs`: two new tests (35 now). One checks that `text` and `output` fences are skipped while `bash` and unlabeled ones are still read, and one that a `text` fence ends at its closing fence.
+- `README.md` and `CLAUDE.md`: the test count and a line about the fence rule.
+
+**What I checked**
+- The flags in the long command were checked against `claude --help`, not memory: `-p` is "Print response and exit", `--output-format json` is a "single result", and `--add-dir` gives tool access to additional directories. The help lists `acceptEdits` as a choice but does not say what it does, so the README says only why I used it. The help also warns that `-p` skips the workspace trust dialog, so the README says to use it only in folders I trust.
+- I ran both step 1 commands and pasted the real output: the bad files give 5 problems and exit 1, and the good files give `Result: PASS` and exit 0.
+- **The checker failed this README on its first try.** The pasted output had lines like `npm run test: no "test" script`, and the checker read them as commands the README tells readers to run, so it reported 2 problems. That was a real false alarm, found by running the tool on its own README. I fixed the checker, not the README.
+- After the fix: 35 checker tests and 14 gather tests pass, and this README passes the checker's free checks (exit 0; the only warning is the "What I ran it on" section, which is expected). On midi-companion's and the Portfolio's READMEs and the two fixture READMEs, the parser reads exactly the same lines as before, and only this README's changed (73 code lines down to 57).
+- **Not checked:** the interactive way of running the skill. Every real run so far was `claude -p`. I did not run the skill again with the model after the README or the checker changed.
+
+**Decisions**
+- Fixed the checker instead of removing the example output, because showing what a tool prints is normal in a README for a command-line tool. The cost is a new rule that a fence labeled `text` or `output` is not checked, so a wrong command inside such a fence would not be caught.
+
+---
+
 ## Where AI misread me, or I had to correct course
 
 **Claude**
@@ -418,6 +527,11 @@ I started with no idea and the placeholder name `temporaryname`. I rewrote this 
 - **Left evidence empty although my notes had it (the model's slip, entry 13):** seven of the 17 unsupported claims are stated in `CLAUDE.md` or `log.md`. The model's own rule told it to use notes only for facts the code cannot show. Widened the rule in `SKILL.md`; not re-run yet.
 - **Said "log.md link" and confused me (Claude's slip, entry 15):** I asked where the build log would live, and Claude offered "link to log.md on GitHub" without saying that the log was already in this repo. I thought it meant the portfolio's own `log.md`, so I asked if it wasn't living on the portfolio. Claude explained and I chose option 1.
 - **Left the README and todo rewrite out of the log (Claude's slip, entry 15):** both were rewritten after entry 13 and were not logged until entry 15.
+- **The new README example failed the tool's own check (Claude's slip, entry 21):** Claude pasted the checker's output into the README, and the checker read the `npm run test` and `node scripts/seed.mjs` lines in that output as commands to run, so the README failed with exit 1. Claude had run the free checks only after writing the section. It fixed the checker to skip fences labeled `text` or `output`.
+- **Three sentences in the README claimed more than the code does (Claude's slip, entry 19):** "word for word" (the checker ignores extra spaces), "anything in `.gitignore`" (`!` lines are not applied), and "the only things it may run without asking" (the evidence only shows what is pre-approved). The model flagged the first two when the tool ran on its own README, and Claude found the third in the spot check. All three are fixed in the README.
+- **Gather left secret-bearing files on the list the model may open (Claude's slip, entry 18):** the README said gather skips "anything that looks like a secret", but only entry files and the `package.json` summary were scanned, and even a flagged file stayed on the `files` list. Found by a test with made-up secrets in a throwaway repo, and fixed in the code.
+- **Two small slips while fixing it (Claude's slip, entry 18):** a new test expected one line number where the scanner returned two (the code now de-duplicates), and a cleanup command deleted the "before" gather files I needed for a comparison. I redid the comparison with the committed version of gather.
+- **The README's example command did not work on a fresh clone (Claude's slip, entry 17):** Claude wrote it with a `>` into a folder that is gitignored, and it also pointed at `../midi-companion`, which nobody else has. I only found out when Claude cloned the repo and ran it.
 - **Wrong run count in a title (Claude's slip, entry 16):** entry 13 was titled "Third midi-companion run", but midi-companion had been checked twice (runs 4 and 6). Claude only caught it when I asked it to go through the log, and fixed the title.
 
 **My own mistakes**
