@@ -11,7 +11,7 @@
 <!-- Evidence: "name", "bin" and "files" in package.json. Do not show a registry install command unless the repo shows it is published. -->
 
 ## Usage
-<!-- Start with the smallest working example, then the other commands or options, each with one plain sentence on what it does. Evidence: the entry file's argument handling, or an existing README example. Every command or option shown must be found in the code. Say what it prints only if a file in the repo shows it. -->
+<!-- Keep it short: start with the smallest working example in a code block, with a # comment on each command. Evidence: the entry file's argument handling, or an existing README example. Every command or option shown must be found in the code. Say what it prints only if a file in the repo shows it. -->
 
 ## Built with
 <!-- Evidence: dependencies and devDependencies in package.json. -->

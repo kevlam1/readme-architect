@@ -17,7 +17,7 @@
 <!-- A file tree of the tracked files, with a few words on each. Every path must exist. -->
 
 ## Run it locally
-<!-- Evidence: a command in a notes file or doc, with one plain sentence on what it does. If there is none, say so. Do not invent one, and do not say that opening index.html works unless a file in the repo says so. -->
+<!-- Evidence: a command in a notes file or doc, in a short code block with a # comment. If there is none, say so. Do not invent one, and do not say that opening index.html works unless a file in the repo says so. -->
 
 ## Deploy
 <!-- optional: leave this section out unless the repo shows how it is deployed (a workflow file, a CNAME, a vercel.json, or a notes file). -->
