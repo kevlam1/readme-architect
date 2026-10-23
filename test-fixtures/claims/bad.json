@@ -1,0 +1,24 @@
+{
+  "claims": [
+    {
+      "text": "It is a tiny todo list page.",
+      "evidence": [{ "file": "package.json", "quote": "\"description\": \"A tiny todo list page\"" }]
+    },
+    {
+      "text": "It has a dark mode.",
+      "evidence": []
+    },
+    {
+      "text": "It is built with Webpack.",
+      "evidence": [{ "file": "package.json", "quote": "\"webpack\": \"^5.0.0\"" }]
+    },
+    {
+      "text": "A script seeds the sample data.",
+      "evidence": [{ "file": "scripts/seed.mjs", "quote": "export function seed()" }]
+    },
+    {
+      "text": "Todos are saved in localStorage.",
+      "evidence": [{ "file": "main.js", "quote": "localStorage.setItem(KEY" }]
+    }
+  ]
+}

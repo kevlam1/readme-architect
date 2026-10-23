@@ -1,0 +1,19 @@
+{
+  "claims": [
+    {
+      "text": "It is a tiny todo list page.",
+      "evidence": [{ "file": "package.json", "quote": "\"description\": \"A tiny todo list page\"" }]
+    },
+    {
+      "text": "Todos are saved in localStorage under the key sample-todos.",
+      "evidence": [
+        { "file": "main.js", "quote": "const KEY = 'sample-todos';" },
+        { "file": "main.js", "quote": "localStorage.setItem(KEY" }
+      ]
+    },
+    {
+      "text": "Each todo gets an id from nanoid.",
+      "evidence": [{ "file": "main.js", "quote": "todos.push({ id: nanoid(), text });" }]
+    }
+  ]
+}
