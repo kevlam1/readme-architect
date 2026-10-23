@@ -67,7 +67,7 @@ test('secrets and ignored files are left out, and their contents never appear', 
     },
     (dir) => {
       const g = gather(dir);
-      assert.deepEqual(g.files.map((f) => f.path), ['.env.example', '.gitignore', 'package.json', 'src/main.js']);
+      assert.deepEqual(g.files.map((f) => f.path), ['.env.example', '.gitignore', 'package.json']);
       const why = (p) => g.skipped.find((s) => s.path === p)?.reason;
       assert.equal(why('.env'), 'secret-path');
       assert.equal(why('key.pem'), 'secret-path');
@@ -91,6 +91,34 @@ test('a secret inside package.json scripts withholds the whole summary', () => {
     const g = gather(dir);
     assert.deepEqual(g.packageJson, { withheld: 'looks-like-secret' });
     assert.equal(JSON.stringify(g).includes(value), false);
+    assert.deepEqual(g.files, []); // the file is no longer on the list the model may open
+  });
+});
+
+test('a secret in a file that is not an entry file takes it off the list of files to open', () => {
+  withRepo(
+    {
+      'package.json': '{"name":"t"}',
+      'index.html': '<title>t</title>',
+      'src/config.js': `export const token = "${fakeToken}"\n`,
+      'src/util.js': 'export const ok = 1\n',
+      'logo.png': `binary ${fakeToken}`, // not scanned: images and other binaries are left alone
+    },
+    (dir) => {
+      const g = gather(dir);
+      assert.deepEqual(g.files.map((f) => f.path), ['index.html', 'logo.png', 'package.json', 'src/util.js']);
+      const hit = g.skipped.find((s) => s.path === 'src/config.js');
+      assert.equal(hit.reason, 'looks-like-secret');
+      assert.deepEqual(hit.lines, [1]);
+      assert.equal(JSON.stringify(g).includes(fakeToken), false);
+    },
+  );
+});
+
+test('only the first 200000 bytes of a file are scanned for secrets', () => {
+  withRepo({ 'package.json': '{"name":"t"}', 'big.js': 'x'.repeat(250000) + `\n"${fakeToken}"\n` }, (dir) => {
+    const g = gather(dir);
+    assert.equal(g.files.some((f) => f.path === 'big.js'), true); // known limit: a secret past the cut is not seen
   });
 });
 

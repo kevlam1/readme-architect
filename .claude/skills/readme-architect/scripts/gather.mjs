@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Lists a repo's files and key facts as JSON for the model. Leaves out secrets and ignored files. Plain Node, no dependencies.
 // Usage: node gather.mjs --repo <dir> [--out <file.json>]   (without --out the JSON is printed)
-import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { isSecretPath, scanSecrets } from './check-readme.mjs';
@@ -9,6 +9,8 @@ import { isSecretPath, scanSecrets } from './check-readme.mjs';
 const MAX_FILES = 3000;
 const MAX_ENTRY_FILES = 8;
 const MAX_ENTRY_CHARS = 20000;
+const SCAN_BYTES = 200000; // how much of each text file is read for secrets
+const BINARY_FILE = /\.(png|jpe?g|gif|webp|avif|ico|mp3|wav|ogg|mid|midi|mp4|webm|woff2?|ttf|otf|pdf|zip|gz)$/i;
 const ALWAYS_SKIP_DIRS = new Set(['.git', 'node_modules']);
 const ENTRY_NAMES = ['index.html', 'main.js', 'main.mjs', 'index.js', 'src/main.js', 'src/main.ts', 'src/index.js', 'src/index.ts', 'app.js', 'server.js'];
 const SKILL_FILE = /^\.claude\/skills\/[^/]+\/SKILL\.md$/;
@@ -74,6 +76,35 @@ function walk(root, ignore) {
   return { files, skipped, truncated };
 }
 
+// Reads the start of each text file and takes out any that looks like it holds a secret, so the list of files the model may open
+// leaves them out. Only line numbers are recorded, never the text. package.json is handled on its own in gather().
+function dropSecretFiles(root, files, skipped) {
+  const kept = [];
+  for (const f of files) {
+    if (f.path === 'package.json' || BINARY_FILE.test(f.path)) {
+      kept.push(f);
+      continue;
+    }
+    let text = '';
+    try {
+      const fd = openSync(path.join(root, f.path), 'r');
+      try {
+        const buf = Buffer.alloc(Math.min(f.bytes, SCAN_BYTES));
+        text = buf.toString('utf8', 0, readSync(fd, buf, 0, buf.length, 0));
+      } finally {
+        closeSync(fd);
+      }
+    } catch {
+      skipped.push({ path: f.path, reason: 'unreadable' });
+      continue;
+    }
+    const hits = scanSecrets(text);
+    if (hits.length) skipped.push({ path: f.path, reason: 'looks-like-secret', lines: [...new Set(hits.map((h) => h.line))] });
+    else kept.push(f);
+  }
+  return kept;
+}
+
 export function detectKind(paths, pkg) {
   const has = (p) => paths.includes(p);
   const skill = paths.find((p) => SKILL_FILE.test(p));
@@ -103,7 +134,9 @@ export function gather(rootArg) {
   const root = path.resolve(rootArg);
   if (!statSync(root).isDirectory()) throw new Error('not a folder');
   const ignore = loadIgnore(root);
-  const { files, skipped, truncated } = walk(root, ignore);
+  const { files: listed, skipped, truncated } = walk(root, ignore);
+  const files = dropSecretFiles(root, listed, skipped);
+  skipped.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
   const paths = files.map((f) => f.path);
 
   let pkg = null;
@@ -146,7 +179,7 @@ export function gather(rootArg) {
     packageJsonError,
     gitignore: { rules: ignore.rules, unsupportedLines: ignore.unsupported },
     filesTruncated: truncated,
-    files,
+    files: packageJson?.withheld ? files.filter((f) => f.path !== 'package.json') : files,
     entryFiles,
     skipped,
   };
