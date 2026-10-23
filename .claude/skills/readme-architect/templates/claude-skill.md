@@ -14,7 +14,7 @@
 <!-- optional: leave this section out unless the code or a notes file states a limit. -->
 
 ## Try it
-<!-- Evidence: the skill name in the SKILL.md frontmatter, the scripts or tests named in package.json or the repo, and where the skill folder has to be placed. Every command shown must exist. Say if it needs Node and which version only if the repo states it. -->
+<!-- Order: (1) the quickest way to see it work with no model and no cost, if the repo has a test script or a fixture that shows it: name the command and say in one plain sentence what it shows; (2) the real way to run the skill: the slash command and its arguments (the name and argument-hint in the SKILL.md frontmatter), with one plain sentence on what each argument or flag does, taken from SKILL.md or a notes file; (3) where the output goes and how to read it, only as far as SKILL.md, a script or a notes file states it. Say what the reader will see only if a file in the repo shows it, otherwise leave it out. Write paths that belong to the reader as placeholders such as <your-project>. Every command shown must exist. Say if it needs Node, and which version only if the repo states it. Give a cost or a run time only if a notes file states it. If the repo does not say where the skill folder has to be placed, say so. -->
 
 ## Built with
 <!-- optional: leave this section out unless the repo shows what it uses (a package.json, or a notes file). -->

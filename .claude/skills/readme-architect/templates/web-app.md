@@ -11,7 +11,7 @@
 <!-- optional: leave this section out unless the code or a notes file states a limit. -->
 
 ## Run it locally
-<!-- Evidence: "scripts" in package.json. Every command shown must exist there. A Node version only if package.json "engines" or a notes file states it. A dev server address only if a notes file or the dev server's config states it. Environment variable names only if the code reads them (the gather script skips .env files); never show a value. -->
+<!-- Start with the one command that gets the app running, then one plain sentence per command on what it does, in the order a reader would use them. Evidence: "scripts" in package.json. Every command shown must exist there. A Node version only if package.json "engines" or a notes file states it. A dev server address only if a notes file or the dev server's config states it. Environment variable names only if the code reads them (the gather script skips .env files); never show a value. -->
 
 ## Deploy
 <!-- optional: leave this section out unless the repo shows how it is deployed (a vercel.json, a Dockerfile, a workflow file, a deploy script, or a notes file). -->
