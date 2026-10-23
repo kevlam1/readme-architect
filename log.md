@@ -512,6 +512,25 @@ I started with no idea and the placeholder name `temporaryname`. I rewrote this 
 
 ---
 
+## 22. Cutting "Try it" back down (2026-10-22)
+
+**What I asked for**
+- Looked at PokeGuess's "Run locally" (one short code block with a few `#` comments, then three links) and told Claude it was doing too much for a how-to guide.
+
+**What changed**
+- `README.md`, "Try it": from about 70 lines with three subsections down to about 25. It is now two short code blocks (the checker on the bad test project, then the real run), a few plain notes, and the tests. The step on how to read the report and the flag-by-flag list are gone.
+- The guidance comments in the four templates: shortened to say that the run section should be one short code block with a `#` comment on each command. The evidence rules stayed, so the model still can't say what a run prints unless a file in the repo shows it.
+- Entries 20 and 21 describe the longer version and are left as written.
+
+**What I checked**
+- The README still passes the checker's free checks (exit 0, only the expected "What I ran it on" warning), and the commands in its code blocks all exist. The templates still parse the same way: midi-companion matches `web-app.md` and the Portfolio matches `static-site.md` exactly. Every template comment is still on one line. Both test files pass (35 and 14).
+- **Not checked:** how the model follows the shorter guidance, since I did not run generate mode again. And I did not re-run the real command from the README; it is the same one my earlier runs used.
+
+**Decisions**
+- Kept two things that a stranger would trip on without them: the `mkdir`, and the note that `MSYS_NO_PATHCONV=1` is for Git Bash. Left out what each flag means. The "What it cannot do" section already says what the checker does not prove.
+
+---
+
 ## Where AI misread me, or I had to correct course
 
 **Claude**
@@ -527,6 +546,7 @@ I started with no idea and the placeholder name `temporaryname`. I rewrote this 
 - **Left evidence empty although my notes had it (the model's slip, entry 13):** seven of the 17 unsupported claims are stated in `CLAUDE.md` or `log.md`. The model's own rule told it to use notes only for facts the code cannot show. Widened the rule in `SKILL.md`; not re-run yet.
 - **Said "log.md link" and confused me (Claude's slip, entry 15):** I asked where the build log would live, and Claude offered "link to log.md on GitHub" without saying that the log was already in this repo. I thought it meant the portfolio's own `log.md`, so I asked if it wasn't living on the portfolio. Claude explained and I chose option 1.
 - **Left the README and todo rewrite out of the log (Claude's slip, entry 15):** both were rewritten after entry 13 and were not logged until entry 15.
+- **Wrote far too much for a how-to guide (Claude's slip, entries 20 and 21):** "Try it" grew into three subsections with a flag-by-flag list and a guide to reading the report, and the template guidance asked for the same. I pointed at PokeGuess's short "Run locally" and Claude cut both back (entry 22).
 - **The new README example failed the tool's own check (Claude's slip, entry 21):** Claude pasted the checker's output into the README, and the checker read the `npm run test` and `node scripts/seed.mjs` lines in that output as commands to run, so the README failed with exit 1. Claude had run the free checks only after writing the section. It fixed the checker to skip fences labeled `text` or `output`.
 - **Three sentences in the README claimed more than the code does (Claude's slip, entry 19):** "word for word" (the checker ignores extra spaces), "anything in `.gitignore`" (`!` lines are not applied), and "the only things it may run without asking" (the evidence only shows what is pre-approved). The model flagged the first two when the tool ran on its own README, and Claude found the third in the spot check. All three are fixed in the README.
 - **Gather left secret-bearing files on the list the model may open (Claude's slip, entry 18):** the README said gather skips "anything that looks like a secret", but only entry files and the `package.json` summary were scanned, and even a flagged file stayed on the `files` list. Found by a test with made-up secrets in a throwaway repo, and fixed in the code.
