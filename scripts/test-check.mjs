@@ -276,6 +276,24 @@ test('cli: a secret in the README fails the run and its value is never printed',
   }
 });
 
+test('cli: a secret in a claim or in a command is hidden in every list, not only in SECRETS', () => {
+  withDir({ 'package.json': '{"scripts":{"dev":"vite"}}' }, (dir) => {
+    const token = 'ghp_' + 'Z'.repeat(36);
+    const pass = 'Q'.repeat(24);
+    const md = `# t\n\nUse ${token} to log in.\n\n\`\`\`\nnode scripts/login.mjs --api_key=${pass}\n\`\`\`\n`;
+    writeFileSync(path.join(dir, 'README.md'), md);
+    writeFileSync(path.join(dir, 'claims.json'), JSON.stringify({ claims: [
+      { text: `Use ${token} to log in.`, evidence: [] },
+      { text: `Notes say ${token}.`, evidence: [{ file: 'package.json', quote: 'no such quote ' + token }] },
+    ] }));
+    const r = run('--repo', dir, '--readme', path.join(dir, 'README.md'), '--claims', path.join(dir, 'claims.json'));
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /SECRETS/);
+    assert.match(r.stdout, /hidden: looks like a secret/);
+    assert.equal(/ZZZZZ|QQQQQ/.test(r.stdout), false, r.stdout);
+  });
+});
+
 test('cli: structure problems only fail the run with --strict-structure', () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), 'readme-architect-test-'));
   try {

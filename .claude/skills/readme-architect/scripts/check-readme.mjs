@@ -192,7 +192,12 @@ function parseArgs(argv) {
   return o;
 }
 
-const clip = (s, n = 70) => (s.length > n ? s.slice(0, n) + '...' : s);
+// Anything printed from the README, the claims or the commands goes through hide(), so a secret in them is never echoed.
+const hide = (s) => (scanSecrets(String(s)).length ? '[hidden: looks like a secret]' : String(s));
+const clip = (s, n = 70) => {
+  const t = hide(s);
+  return t.length > n ? t.slice(0, n) + '...' : t;
+};
 
 export function main(argv) {
   const a = parseArgs(argv);
@@ -247,7 +252,7 @@ export function main(argv) {
   }
   if (notes.length) {
     console.log('\nONLY BY NOTES (warning only: the evidence is a markdown or text file, which can repeat the README instead of showing the code):');
-    for (const r of notes) console.log(`  - ${clip(r.text)}  [${r.files.join(', ')}]`);
+    for (const r of notes) console.log(`  - ${clip(r.text)}  [${hide(r.files.join(', '))}]`);
   }
   if (bad.length) {
     console.log('\nBAD EVIDENCE (the tag says whose problem it most likely is):');
@@ -255,17 +260,17 @@ export function main(argv) {
       console.log(`  - ${clip(r.text)}`);
       for (const p of r.problems) {
         const tag = p.code === 'not-in-gather-list' ? '[gather script or process]' : '[model]';
-        console.log(`      ${tag} ${p.code}: ${p.detail}${showQuotes && p.quote ? ` | quote: ${clip(p.quote, 50)}` : ''}`);
+        console.log(`      ${tag} ${p.code}: ${hide(p.detail)}${showQuotes && p.quote ? ` | quote: ${clip(p.quote, 50)}` : ''}`);
       }
     }
   }
   if (commands.problems.length) {
     console.log('\nCOMMANDS (README problem: the README tells readers to run something that is not there):');
-    for (const p of commands.problems) console.log(`  - ${p.cmd}: ${p.why}`);
+    for (const p of commands.problems) console.log(`  - ${hide(p.cmd)}: ${hide(p.why)}`);
   }
   if (commands.unchecked.length) {
     console.log('\nNOT CHECKED:');
-    for (const p of commands.unchecked) console.log(`  - ${p.cmd}: ${p.why}`);
+    for (const p of commands.unchecked) console.log(`  - ${hide(p.cmd)}: ${hide(p.why)}`);
   }
   let structureProblems = 0;
   if (structure) {
