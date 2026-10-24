@@ -28,7 +28,7 @@ A model does part of the work every time it runs. Plain Node scripts do the rest
 - **"Unsupported" does not mean "wrong".** It means the model found no proof in the repo. Some are only true on the author's machine ("in sync on my computer"), and some are opinions.
 - **The model can miss claims.** The checker only checks the claims the model listed, so a claim it skipped is never checked.
 - **It handles one project at the top of the folder.** A repo with separate `backend/` and `frontend/` folders and no top-level `package.json` (like Cardex and PokeGuess) gets no template, and its `npm run` commands would be flagged as problems. Supporting that needs changes to both scripts.
-- **Secrets:** the gather script leaves them out of what it hands the model, but that is not a guarantee. It only looks at the first 200 KB of each text file, and it only knows a few secret shapes (private key blocks, AWS, GitHub, Anthropic and OpenAI-style keys, and `api_key`, `secret`, `token` or `password` assignments with a long value). Claude Code can still open files with its own tools. I have not tested whether a deny rule stops that.
+- **Secrets:** the gather script leaves them out of what it hands the model, but that is not a guarantee. It only looks at the first 200 KB of each text file, and it only knows a few secret shapes (private key blocks, AWS, GitHub, Anthropic and OpenAI-style keys, and `api_key`, `secret`, `token` or `password` assignments with a long value). Claude Code can still open files with its own tools. The repo has a `.claude/settings.json` with `Read` deny rules for `.env` and key files, written from the Claude Code docs, which call such rules best-effort: they cover its file tools and shell commands like `cat`, not a script that opens the file itself. I have not tested them. My test run was blocked.
 - **Each run costs money and takes minutes.** It uses my Claude Code access, with no API key. The result files estimate $0.87 and about 90 seconds for 55 claims, and $2.11 and about 5 minutes for 188 claims, at list price. Those are estimates, not a bill. The test files and the checker alone take seconds and cost nothing.
 
 ## Try it
@@ -54,7 +54,7 @@ MSYS_NO_PATHCONV=1 claude -p "/readme-architect check ../your-project" --add-dir
 
 ```bash
 # Tests
-node scripts/test-check.mjs     # 35 tests
+node scripts/test-check.mjs     # 36 tests
 node scripts/test-gather.mjs    # 14 tests
 ```
 

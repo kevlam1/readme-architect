@@ -531,6 +531,30 @@ I started with no idea and the placeholder name `temporaryname`. I rewrote this 
 
 ---
 
+## 23. Last audit: the checker could still print a secret (2026-10-23)
+
+**What I asked for**
+- After updating the portfolio card, asked Claude whether the artifact still needs improvements or updates, to say honestly if it is good, and to make sure no secret can leak into a README, with boundaries to check it.
+
+**What changed**
+- `check-readme.mjs`: anything it prints from the README or the claims (claim text, commands, notes and detail text) now goes through a `hide()` function, and a line that looks like a secret is shown as `[hidden: looks like a secret]`. It checks the whole text before it is cut to 70 characters, so a cut-off start of a token is not shown either.
+- `scripts/test-check.mjs`: one new test (36 now). A made-up token in a claim and a made-up password in a `node` command must not appear in any part of the output, not even five repeated characters of them.
+- `.claude/settings.json` (new): `Read` deny rules for `.env`, `.env.local`, other `.env.*` files that are not examples, `*.pem`, `*.key`, `*.p12`, `*.pfx` and `id_*` key files. `.env.example` is left readable because the checker allows it as evidence.
+- `README.md`, `CLAUDE.md`, `docs/todo.md`: the test count, the secrets paragraph, and the todo item for the deny-rule test.
+
+**What I checked**
+- **The leak was real.** I built a throwaway repo with a made-up GitHub token inside a README sentence and the same sentence as an unsupported claim. The SECRETS section said "values are not shown", but the UNSUPPORTED list printed the whole token. After the fix the output was clean, and the new test fails against the old checker and passes against the new one.
+- Before the fix I had also read through the code: quotes were already hidden when the claims report had a secret, but claim text and README commands were not.
+- 36 checker tests and 14 gather tests pass. Tracked files hold no secret-shaped strings except the checker's own patterns and the made-up test values.
+- The deny-rule syntax comes from the Claude Code permissions page (read 2026-10-23, saved copy): `//**/.env` anchors to the whole filesystem and `Read` rules are best-effort. They cover Claude's file tools and shell commands like `cat`, not a script that opens the file itself, and only the OS sandbox is a hard block.
+- **Not checked:** whether my deny rules work. Claude tried a one-turn headless test with a fake `.env` in a temp folder, but the harness refused the command ("Access to a sensitive path is not allowed"). Claude did not work around it, deleted the temp folder, and the rules stay untested. Also not checked: secret shapes the scanner does not know, and secrets after the first 200 KB of a file.
+
+**Decisions**
+- Fixed the printing in the checker and did not rely on the README text saying "never prints". That sentence was false until today.
+- Kept the deny rules even though they are untested, because they are one small file, they only deny files the checker already rejects, and the README says plainly that they are untested and best-effort.
+
+---
+
 ## Where AI misread me, or I had to correct course
 
 **Claude**
@@ -546,6 +570,8 @@ I started with no idea and the placeholder name `temporaryname`. I rewrote this 
 - **Left evidence empty although my notes had it (the model's slip, entry 13):** seven of the 17 unsupported claims are stated in `CLAUDE.md` or `log.md`. The model's own rule told it to use notes only for facts the code cannot show. Widened the rule in `SKILL.md`; not re-run yet.
 - **Said "log.md link" and confused me (Claude's slip, entry 15):** I asked where the build log would live, and Claude offered "link to log.md on GitHub" without saying that the log was already in this repo. I thought it meant the portfolio's own `log.md`, so I asked if it wasn't living on the portfolio. Claude explained and I chose option 1.
 - **Left the README and todo rewrite out of the log (Claude's slip, entry 15):** both were rewritten after entry 13 and were not logged until entry 15.
+- **"It never prints a secret's value" was false (Claude's slip, entry 23):** the README and `CLAUDE.md` said it, and the checker's own test only covered a secret in the README with clean claims. A secret inside a claim's text was printed in full. I found it in the final audit with a throwaway repo, and fixed it in the code.
+- **Two small slips in that audit (Claude's slip, entry 23):** a cleanup command stopped halfway because the shell was still inside the folder it tried to delete, and the deny-rule test command named a `.env` path, which the harness refused. I re-ran the cleanup by hand and did not retry the test.
 - **Wrote far too much for a how-to guide (Claude's slip, entries 20 and 21):** "Try it" grew into three subsections with a flag-by-flag list and a guide to reading the report, and the template guidance asked for the same. I pointed at PokeGuess's short "Run locally" and Claude cut both back (entry 22).
 - **The new README example failed the tool's own check (Claude's slip, entry 21):** Claude pasted the checker's output into the README, and the checker read the `npm run test` and `node scripts/seed.mjs` lines in that output as commands to run, so the README failed with exit 1. Claude had run the free checks only after writing the section. It fixed the checker to skip fences labeled `text` or `output`.
 - **Three sentences in the README claimed more than the code does (Claude's slip, entry 19):** "word for word" (the checker ignores extra spaces), "anything in `.gitignore`" (`!` lines are not applied), and "the only things it may run without asking" (the evidence only shows what is pre-approved). The model flagged the first two when the tool ran on its own README, and Claude found the third in the spot check. All three are fixed in the README.
