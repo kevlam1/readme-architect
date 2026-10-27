@@ -309,4 +309,15 @@ test('cli: structure problems only fail the run with --strict-structure', () => 
   }
 });
 
+test('SKILL.md gives the checker a README path joined to the repo folder', () => {
+  // gather.json's "readme" is relative to the repo, but the checker reads --readme from the current folder.
+  // Passing it unjoined checked this repo's own README instead of the target's (run 8).
+  const skill = readFileSync(path.join(top, '.claude', 'skills', 'readme-architect', 'SKILL.md'), 'utf8');
+  const step7 = skill.split('\n').find((l) => l.includes('check-readme.mjs') && l.includes('--repo "<repo-folder>"'));
+  assert.ok(step7, 'step 7 command not found');
+  assert.match(step7, /--readme "<readme-path>"/);
+  assert.equal(step7.includes('<readme-file>'), false);
+  assert.match(skill, /relative to the repo folder, not to the folder you are in/);
+});
+
 console.log(`\n${passed} passed${process.exitCode ? ', some FAILED' : ''}`);

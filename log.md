@@ -555,6 +555,30 @@ I started with no idea and the placeholder name `temporaryname`. I rewrote this 
 
 ---
 
+## 24. Run 8 on midi-companion: a path bug in SKILL.md (2026-10-27)
+
+**What I asked for**
+- After I added the Piano sound setting to midi-companion, I asked Claude to run readme-architect on its README to see if anything in it was wrong. Then I told it to fix everything the run found.
+
+**What changed**
+- `.claude/skills/readme-architect/SKILL.md`, steps 3 and 7: gather.json's `readme` is relative to the repo folder, but the checker reads `--readme` from the folder the run is started in. Step 7 now says to join the repo folder and the README name into one path (`<readme-path>`) and to use that in the checker command.
+- `scripts/test-check.mjs`: one new test (37 now). It reads `SKILL.md` and fails if step 7 passes the README name without the join, or if step 3 stops telling the model to join it.
+- `README.md`, `CLAUDE.md`: the test count, 36 to 37.
+- midi-companion's `README.md`, the Known limits line about crossing hands: it said the Tracks popup could fix a wrong hand guess. The popup can only switch tracks off, so the line now says that.
+
+**What I checked**
+- **The bug was real.** In the first part of the run, the checker's COMMANDS and STRUCTURE sections read readme-architect's own README, because `README.md` also exists in this folder. Claude re-ran just the checker with the correct path and said so. The model's own list of claims was not affected.
+- The run finished with exit code 0: 199 claims, 177 backed by code, 10 only by notes, 12 with no evidence, 0 bad evidence. Claude's own estimate of the cost was about $2.50, which is only an estimate.
+- Claude went through the 12 unsupported claims against midi-companion's real files by hand. Only one was a real README error (the crossing-hands line above).
+- The new test passes on the fixed `SKILL.md` and fails when I put the old `SKILL.md` back, so it does catch this bug. 37 checker tests and 14 gather tests pass.
+- **Not checked:** I did not run the skill again after the fix, so I have not seen it build the joined path on its own. The test only checks the wording of `SKILL.md`, not what the model does with it.
+
+**Decisions**
+- Fixed `SKILL.md` and not the checker. The checker cannot tell a wrong README from a right one when both exist in the current folder, so a checker-side fallback would hide the mistake.
+- Did not re-run the skill just to test the fix, because a run costs real money and my own notes say not to repeat runs without a reason.
+
+---
+
 ## Where AI misread me, or I had to correct course
 
 **Claude**
@@ -578,6 +602,7 @@ I started with no idea and the placeholder name `temporaryname`. I rewrote this 
 - **Gather left secret-bearing files on the list the model may open (Claude's slip, entry 18):** the README said gather skips "anything that looks like a secret", but only entry files and the `package.json` summary were scanned, and even a flagged file stayed on the `files` list. Found by a test with made-up secrets in a throwaway repo, and fixed in the code.
 - **Two small slips while fixing it (Claude's slip, entry 18):** a new test expected one line number where the scanner returned two (the code now de-duplicates), and a cleanup command deleted the "before" gather files I needed for a comparison. I redid the comparison with the committed version of gather.
 - **The README's example command did not work on a fresh clone (Claude's slip, entry 17):** Claude wrote it with a `>` into a folder that is gitignored, and it also pointed at `../midi-companion`, which nobody else has. I only found out when Claude cloned the repo and ran it.
+- **Gave the checker a path that only worked from the wrong folder (Claude's slip, entry 24):** `SKILL.md` passed gather's `readme` value (`README.md`) to the checker unchanged, and the checker read it from the current folder, so on the midi-companion run two sections were checked against this repo's own README. Fixed in `SKILL.md` and covered by a new test.
 - **Wrong run count in a title (Claude's slip, entry 16):** entry 13 was titled "Third midi-companion run", but midi-companion had been checked twice (runs 4 and 6). Claude only caught it when I asked it to go through the log, and fixed the title.
 
 **My own mistakes**

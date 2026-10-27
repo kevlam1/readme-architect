@@ -28,7 +28,7 @@ Plain scripts do the listing and the verifying. You do one thing: read the READM
 
 2. Read `readme-architect-out/gather.json`. It lists the kind of project, every file you may open (`files`), key files with their text (`entryFiles`), and what was left out (`skipped`).
 
-3. Read the README (the one named in the arguments, or the `readme` field in gather.json). If there is none, say so and stop.
+3. Read the README (the one named in the arguments, or the `readme` field in gather.json). If there is none, say so and stop. The `readme` field is relative to the repo folder, not to the folder you are in. Join the repo folder and the README name into one path (for example `../midi-companion/README.md`) and call it `<readme-path>`. Use `<readme-path>` both to read the file and in step 7.
 
 4. List the claims. A claim is a sentence or bullet in the README that says something that could be true or false about the repo: what it uses, what it does, what a command does, a file or folder that exists, a number, a limit, a requirement. Split a sentence with several facts into one claim per fact. Skip opinions, greetings and calls to action. Do not skip a claim because it looks minor or because you cannot find evidence for it.
 
@@ -47,7 +47,7 @@ Plain scripts do the listing and the verifying. You do one thing: read the READM
    It must be valid JSON. Escape double quotes and backslashes inside quotes.
 
 7. Run the checker, again with the script path in double quotes. Use this exact form, with the template named in gather.json's `templateFile` (leave out `--template` if it is null). Run it as this one command and nothing else: do not add `; echo`, `&&`, a pipe or a redirect after it, because the pre-approval only matches a command that starts with the script path and a longer command can be refused (this happened in run 4). The exit code is shown to you by the tool:
-   `node "${CLAUDE_SKILL_DIR}/scripts/check-readme.mjs" --repo "<repo-folder>" --readme "<readme-file>" --claims readme-architect-out/claims.json --gathered readme-architect-out/gather.json --template "${CLAUDE_SKILL_DIR}/templates/<templateFile>"`
+   `node "${CLAUDE_SKILL_DIR}/scripts/check-readme.mjs" --repo "<repo-folder>" --readme "<readme-path>" --claims readme-architect-out/claims.json --gathered readme-architect-out/gather.json --template "${CLAUDE_SKILL_DIR}/templates/<templateFile>"`
 
 8. Show the checker's output to the user exactly as printed. Then add at most three sentences: how many claims you listed, and that the checker proves only that evidence exists, not that it supports the claim, so the user should read the evidence lines for the claims that matter.
 

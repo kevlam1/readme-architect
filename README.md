@@ -54,7 +54,7 @@ MSYS_NO_PATHCONV=1 claude -p "/readme-architect check ../your-project" --add-dir
 
 ```bash
 # Tests
-node scripts/test-check.mjs     # 36 tests
+node scripts/test-check.mjs     # 37 tests
 node scripts/test-gather.mjs    # 14 tests
 ```
 
